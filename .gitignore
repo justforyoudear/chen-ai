@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.mermaid/
+_mermaid/
+_tmp_render.html
+*.egg-info/
+dist/
+build/
+.eggs/
+.DS_Store
+Thumbs.db
