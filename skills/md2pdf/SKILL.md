@@ -20,15 +20,17 @@ Convert markdown files to high-quality PDF using Playwright (Chromium). Handles 
 
 ## Quick Reference
 
+> Script location: `{SKILL_BASE_DIR}/scripts/md2pdf.py` (relative to this skill's base directory, NOT the project directory)
+
 ```bash
 # Basic usage
-python scripts/md2pdf.py input.md -o output.pdf
+python {SKILL_BASE_DIR}/scripts/md2pdf.py input.md -o output.pdf
 
 # With custom Mermaid scale and width
-python scripts/md2pdf.py input.md -o output.pdf --mermaid-scale 4 --img-width 85
+python {SKILL_BASE_DIR}/scripts/md2pdf.py input.md -o output.pdf --mermaid-scale 4 --img-width 85
 
 # Specify output directory for temp files (default: same as input)
-python scripts/md2pdf.py input.md -o output.pdf --work-dir ./build
+python {SKILL_BASE_DIR}/scripts/md2pdf.py input.md -o output.pdf --work-dir ./build
 ```
 
 ## Process
@@ -52,7 +54,7 @@ output.pdf
 
 ## Implementation
 
-The reusable script is at `scripts/md2pdf.py`.
+The reusable script is at `{SKILL_BASE_DIR}/scripts/md2pdf.py` (relative to this skill's base directory).
 
 Key design decisions baked into the script:
 
