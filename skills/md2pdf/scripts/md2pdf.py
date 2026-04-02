@@ -65,6 +65,7 @@ def md_to_html(md_text, mermaid_images=None):
     in_code = False
     code_lines = []
     code_lang = ""
+    code_indent = 0
     list_stack = []  # [(tag, indent_level)]
 
     def close_lists_to(level):
@@ -80,12 +81,14 @@ def md_to_html(md_text, mermaid_images=None):
         raw = lines[i].rstrip()
         bt3 = "`" * 3
 
-        # Code block fence
-        if raw.startswith(bt3):
+        # Code block fence (support indented ``` inside list items)
+        stripped = raw.lstrip(" ")
+        if stripped.startswith(bt3):
             if not in_code:
                 in_code = True
-                code_lang = raw[3:].strip()
+                code_lang = stripped[3:].strip()
                 code_lines = []
+                code_indent = len(raw) - len(stripped)
                 i += 1
                 continue
             else:
@@ -104,10 +107,18 @@ def md_to_html(md_text, mermaid_images=None):
                     else:
                         parts.append("<p><em>[Mermaid diagram placeholder]</em></p>\n")
                 else:
-                    escaped = escape_html("\n".join(code_lines))
+                    # Strip common leading indent from code lines
+                    dedented = []
+                    for cl in code_lines:
+                        if cl.startswith(" " * code_indent):
+                            dedented.append(cl[code_indent:])
+                        else:
+                            dedented.append(cl.lstrip(" ") if cl.strip() == "" else cl)
+                    escaped = escape_html("\n".join(dedented))
                     parts.append(f'<pre><code class="code-block">{escaped}</code></pre>\n')
                 code_lines = []
                 code_lang = ""
+                code_indent = 0
                 i += 1
                 continue
 
@@ -116,9 +127,10 @@ def md_to_html(md_text, mermaid_images=None):
             i += 1
             continue
 
-        # Blank line
+        # Blank line (don't close lists — blank lines inside list items are just spacing)
         if raw.strip() == "":
-            close_all()
+            if not list_stack:
+                close_all()
             i += 1
             continue
 
@@ -171,9 +183,14 @@ def md_to_html(md_text, mermaid_images=None):
             i += 1
             continue
 
-        # Paragraph
-        close_all()
-        parts.append(f"<p>{convert_inline(raw)}</p>\n")
+        # Paragraph (if inside a list context, keep list open for indented content)
+        indent = len(raw) - len(raw.lstrip(" "))
+        if list_stack and indent > 0:
+            # Indented text inside list — treat as continuation, don't close list
+            parts.append(f"<p style='margin-left:{indent * 2}px'>{convert_inline(raw.strip())}</p>\n")
+        else:
+            close_all()
+            parts.append(f"<p>{convert_inline(raw.strip())}</p>\n")
         i += 1
 
     close_all()
